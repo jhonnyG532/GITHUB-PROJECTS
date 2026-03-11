@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from models import db, Usuario
+from flask_jwt_extended import create_access_token
 
 api_bp = Blueprint('api', __name__)
 
@@ -63,6 +64,8 @@ def listar_usuarios() -> tuple[Response, int]:
 # -------------------------
 # LOGIN
 # -------------------------
+
+
 @api_bp.route('/login', methods=['POST'])
 def login() -> tuple[Response, int]:
 
@@ -74,12 +77,10 @@ def login() -> tuple[Response, int]:
 
     if usuario and check_password_hash(usuario.password_hash, payload['password']):
 
-        identidad = {
-            "username": usuario.username,
-            "rol": usuario.rol
-        }
-
-        token_acceso = create_access_token(identity=identidad)
+        token_acceso = create_access_token(
+            identity=usuario.username,
+            additional_claims={"rol": usuario.rol}
+        )
 
         return jsonify({
             "mensaje": "Login exitoso",
